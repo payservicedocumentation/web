@@ -77,7 +77,7 @@ curl --location --request POST 'https://navenpravah.in/v2/payout/client' \
 
   This field should contain either the **UPI ID** or the **bank account number**, depending on the payment method used:
 
-  - **For UPI payments**: The field should contain the UPI ID of the recipient (e.g., `"jerom123@kkotak"`).
+  - **For UPI payments**: The field should contain the valid UPI ID of the recipient (e.g., `"jerom123@kkotak"`). Ensure the VPA suffix/handle is correct and supported, otherwise the request will fail with an `invalid_upi` error.
   - **For IMPS payments**: The field should contain the recipient's bank account number (e.g., `"123456789012"`).
 
   **Example for UPI**: `"recipient_card": "jerom123@kkotak"`
@@ -108,6 +108,7 @@ curl --location --request POST 'https://navenpravah.in/v2/payout/client' \
 | **Status** | **Response** |
 | --- | --- |
 | 201 | `{ "ps_request_id": "clcszbdt937269ouwdl27c8nq" }` — `ps_request_id` (string): The ID of the payment inside Payment System |
+| 400 | `{ "error": { "code": "invalid_upi", "message": "Invalid UPI ID format or unsupported VPA suffix" }, "http_code": 400 }` — Triggered when a non-existent or unsupported UPI handle/suffix is provided in `recipient_card`. |
 | 404 | `{ "error": { "code": "invalid_field_value", "message": "One or more field values in the request are invalid or in the wrong format." } }` |
 | 500 | `{ "error": { "code": "server_error", "message": "Get support from api developer." } }` |
 

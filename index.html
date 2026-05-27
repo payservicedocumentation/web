@@ -13,8 +13,10 @@
     window.$docsify = {
       name: 'Pay-Service India',
       loadSidebar: true,
+      // Вшиваем меню напрямую, чтобы обойти баги кэша GitHub
       alias: {
-        '/.*/_sidebar.md': '/_sidebar.md'
+        '/.*/_sidebar.md': '/_sidebar.md',
+        '/_sidebar.md': '# Menu\n- [Home](README.md)\n- [PayIN Widget](payin.md)\n- [PayIN NoUI](payin-noui.md)\n- [PayOUT](payout.md)\n- [PayIN Acquiring](payin-acq.md)'
       },
       subMaxLevel: 2,
       homepage: 'README.md'

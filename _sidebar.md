@@ -1,5 +1,5 @@
-- [Главная](README.md)
+- [Home](README.md)
 - [PayIN Widget](payin.md)
 - [PayIN NoUI](payin-noui.md)
 - [PayOUT](payout.md)
-- [Эквайринг](payin-acq.md)
+- [PayIN Acquiring](payin-acq.md)

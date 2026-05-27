@@ -1,2 +1,3 @@
 # India API Documentation Pay-Service
-Добро пожаловать в техническую документацию. Выберите нужный раздел в меню слева для просмотра спецификации.
+
+Welcome to the official technical API documentation. Please select a section from the left sidebar menu to view the detailed integration specifications.

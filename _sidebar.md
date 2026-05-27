@@ -1,0 +1,5 @@
+* [🏠 Главная](README.md)
+* [📦 PayIN Widget](payin.md)
+* [⚡ PayIN NoUI](payin-noui.md)
+* [💰 PayOUT](payout.md)
+* [💳 Эквайринг](payin-acq.md)

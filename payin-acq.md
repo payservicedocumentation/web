@@ -45,7 +45,7 @@ curl --location --request POST 'https://mahiapi.in/v2/payin-acq2/page' \
     "card_number": "jerom123@kkotak",
     "widget_id": "acq.v2.s4.5",
     "force_redirect": false,
-    "traffic_type": "ftd",
+    "traffic_type": "ftd", // or "std" - REQUIRED
     "campaign": "clm8wvjah774323vgcdqful7re7"
 }'
 ```
@@ -90,7 +90,7 @@ curl --location --request POST 'https://mahiapi.in/v2/payin-acq2/page' \
 
   Avoid displaying payment success/failure pages. Redirect immediately to the client's page instead.
 
-- **traffic_type** *(optional)*: Specifies the type of traffic being processed.
+- **traffic_type** (STRING, REQUIRED): Specifies the type of traffic being processed.
 
   Possible values:
 
@@ -98,9 +98,7 @@ curl --location --request POST 'https://mahiapi.in/v2/payin-acq2/page' \
 
   `"std"` — for secondary or recurrent traffic.
 
-  If not provided, the system will handle the transaction with default traffic type settings.
-
-  This parameter helps differentiate between various traffic types for better reporting and analysis of transaction flows.
+  This parameter is **mandatory** and must always be provided. It helps differentiate between various traffic types for better reporting and analysis of transaction flows.
 
 - **campaign** (STRING, OPTIONAL)
 

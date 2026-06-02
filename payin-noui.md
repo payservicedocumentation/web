@@ -43,7 +43,7 @@ curl --location --request POST 'https://navenpravah.in/v2/payin/client/noui' \
     "payment_method_type": "imps",  // Optional or Change to "upi" for UPI method or "upi_intent" for UPI Intent-based payments or "mqr"
     "webhook_url": "https://example.com",
     "merchant_request_id": "34535432",
-    "traffic_type": "ftd", // or "std" - Optional parameter
+    "traffic_type": "ftd", // or "std" - REQUIRED
     "campaign": "clm8wvjah774323vgcdqful7re7" // Optional
 }'
 ```
@@ -86,7 +86,7 @@ curl --location --request POST 'https://navenpravah.in/v2/payin/client/noui' \
 
   A unique identifier of the request provided by the client.
 
-- **traffic_type** *(optional)*: Specifies the type of traffic being processed.
+- **traffic_type** (STRING, REQUIRED): Specifies the type of traffic being processed.
 
   Possible values:
 
@@ -94,9 +94,7 @@ curl --location --request POST 'https://navenpravah.in/v2/payin/client/noui' \
 
   `"std"` — for secondary or recurrent traffic.
 
-  If not provided, the system will handle the transaction with default traffic type settings.
-
-  This parameter helps differentiate between various traffic types for better reporting and analysis of transaction flows.
+  This parameter is **mandatory** and must always be provided. It helps differentiate between various traffic types for better reporting and analysis of transaction flows.
 
 - **campaign** (optional)
 

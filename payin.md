@@ -1,6 +1,6 @@
-# PayIN-Acq API Specification V2 INDIA
+# PayIN API Specification V2 INDIA
 
-# PayIN-Acquiring API
+# PayIN API
 
 ## **1. Authentication**
 
@@ -22,8 +22,8 @@ The payment initialization process involves the merchant initiating a payment re
 
 | **Instance** | **Method** | **URL** |
 | --- | --- | --- |
-| **PROD** | **POST** | https://mahiapi.in/v2/payin-acq2/page |
-| **SANDBOX** | **POST** | https://merchant-api.pserv-test1.in/v2/payin-acq2/page |
+| **PROD** | **POST** | https://navenpravah.in/v2/payin/client |
+| **SANDBOX** | **POST** | https://merchant-api.pserv-iner.in/v2/payin/client |
 
 Request parameters are being sent in a form of JSON.
 
@@ -32,65 +32,82 @@ Request parameters are being sent in a form of JSON.
 ---
 
 ```jsx
-curl --location --request POST 'https://mahiapi.in/v2/payin-acq2/page' \
+curl --location --request POST 'https://navenpravah.in/v2/payin/client' \
 --header 'Authorization: Bearer <your_token_here>' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-    "sender_account": "Test name sender",
-    "amount": 2000,
+    "sender_account": "Test ID sender",
+    "sender_name":  "Name sender",
+    "amount": 100,
     "currency": "INR",
+    "payment_method_type": "imps",  // OPTIONAL or Change to "upi" for UPI method or "upi_intent" for UPI Intent-based payments or "mqr" for Merchant QR based payments
     "webhook_url": "https://example.com",
     "redirect_url": "https://google.com",
     "merchant_request_id": "34535432",
-    "card_number": "jerom123@kkotak",
-    "widget_id": "acq.v2.s4.5",
+    "bank": "paytm", // OPTIONAL
+    "widget_id": "p2p",
     "force_redirect": false,
-    "traffic_type": "ftd",
-    "campaign": "clm8wvjah774323vgcdqful7re7"
+    "traffic_type": "ftd", // or "std" - REQUIRED
+    "campaign": "clm8wvjah774323vgcdqful7re7" // Optional
 }'
 ```
 
 ---
 
-### Parameter Descriptions
+- **sender_account**
 
-- **sender_account** (STRING, REQUIRED)
+  The `name` or `unique_id` of the person who will send the money.
 
-  The `name` of the person who will send the money.
+  **sender_name (Optional)**
+  The full name of the person who will send the money. This field is optional and can be used to provide additional context about the sender. Maximum length: 150 characters.
 
-- **amount** (FLOATING POINT NUMERIC, REQUIRED)
+- **amount**
 
   The `amount` of money that will be transferred by the sender.
 
-- **currency** (STRING, REQUIRED)
+- **currency**
 
-  The `currency` of the transaction. Currently only `'INR'` is supported.
+  The `currency` of the transaction. Currently, only 'INR' is supported.
 
-- **webhook_url** (STRING, REQUIRED)
+- **payment_method_type (optional)**
 
-  URL for receiving webhook notifications on success/failure.
+  This parameter specifies the type of payment method. Possible values are `"imps"`, `"upi"`, `"upi_intent"` or `"mqr"` (all in lowercase). Merchants should set this parameter based on the desired payment method:
 
-- **redirect_url** (STRING, REQUIRED)
+  - **`"imps"`** – for IMPS (Immediate Payment Service).
+  - **`"upi"`** – for standard UPI (Unified Payments Interface) transactions.
+  - **`"upi_intent"`** – for UPI Intent-based payments, where the transaction is initiated via a UPI app (e.g., Google Pay, PhonePe).
+  - **`"mqr"`** - for MQR (Merchant QR) based payments. This method allows the user to scan a static or dynamic QR code that encodes payment details.
 
-  Where the user will go after completing the PayIn procedure.
+  If `"upi_intent"` is used, merchants must redirect the user to the appropriate UPI application for transaction completion.
 
-- **merchant_request_id** (STRING, REQUIRED)
+  If this parameter is not specified, the client will be able to choose between the two methods during the payment process.
 
-  Unique identifier of the request from the client.
+- **webhook_url**
 
-- **card_number** (STRING, REQUIRED)
+  The URL for receiving webhook notifications on success or failure of the transaction.
 
-  The credit `card_number` specified by the user.
+- **redirect_url**
 
-- **widget_id** (STRING, REQUIRED)
+  The URL where the user will be redirected after completing the PayIn procedure.
 
-  Unique identifier of the widget that will be displayed by the returned URL.
+- **merchant_request_id**
 
-- **force_redirect** (OPTIONAL, DEFAULT: false)
+  A unique identifier of the request provided by the client.
 
-  Avoid displaying payment success/failure pages. Redirect immediately to the client's page instead.
+- **bank** (optional) - string
 
-- **traffic_type** *(optional)*: Specifies the type of traffic being processed.
+  Specifies the bank / UPI application selected by the user to make the deposit.
+  Allowed values: `"paytm"` / `"phonepe"` / `"gpay"` / `"qr"`
+
+- **widget_id**
+
+  A unique identifier of the widget that will be displayed via the returned URL.
+
+- **force_redirect (optional, default: false)**
+
+  If set to `true`, the user will be redirected directly to the specified `redirect_url` after the payment process, bypassing the default success or failure pages. If set to `false` (the default), the user will see the standard payment outcome pages before any redirection.
+
+- **traffic_type** (STRING, REQUIRED): Specifies the type of traffic being processed.
 
   Possible values:
 
@@ -98,51 +115,62 @@ curl --location --request POST 'https://mahiapi.in/v2/payin-acq2/page' \
 
   `"std"` — for secondary or recurrent traffic.
 
-  If not provided, the system will handle the transaction with default traffic type settings.
+  This parameter is **mandatory** and must always be provided. It helps differentiate between various traffic types for better reporting and analysis of transaction flows.
 
-  This parameter helps differentiate between various traffic types for better reporting and analysis of transaction flows.
+- **campaign (optional)**
 
-- **campaign** (STRING, OPTIONAL)
+  A unique identifier of the campaign associated with the PayIn transaction.
 
-  Unique identifier of the Campaign.
+### Notes for Merchants:
+
+- **`payment_method_type`** can be set to either `"imps"`, `"upi_intent"`, `"upi"` or `"mqr"`. Make sure to select the appropriate method based on your requirements and inform users accordingly.
+- In the absence of the `payment_method_type` parameter, the payment UI will allow the user to choose between IMPS and UPI methods themselves.
 
 ## **Response**
 
 | **Status** | **Response** |
 | --- | --- |
-| 200 | `{ "ps_request_id": "clgggiss10003dvm2qnd01n5e", "url": "https://acqr.3dscoolpaid.com/clgggiss10003dvm2qnd01n5e/transfer" }` — `ps_request_id` (string): The request id inside Payment System. `url` (string): The URL to be displayed for user in iframe. |
+| 200 | `{ "ps_request_id": "clgggiss10003dvm2qnd01n5e", "url":"https://p2p.3dscoolpaid.com/clgggiss10003dvm2qnd01n5e" }` — `url` (string): The URL to be displayed for user in iframe. `ps_request_id` (string): the id for a transaction inside our system. |
 | 401 | `{ "error": { "code": "invalid_token", "message": "The provided token is invalid or has expired." } }` |
 | 401 | `{ "error": { "code": "invalid_partner", "message": "Partner not found." } }` |
+| 410 | `{ "error": { "code": "invalid_bank_account", "message": "Bank account not found." } }` |
 | 400 | `{ "error": { "code": "missing_required_field", "message": "One or more required fields are missing in the request." } }` |
 | 500 | `{ "error": { "code": "server_error", "message": "Get support from api developer." } }` |
 
-## **3. Request Status (PS request id)**
+## **3. Request PayIn Status** by ps_request_id or by merchant_request_id
 
 To retrieve the current status of a payment request, clients should make a GET request to the following endpoint.
 
-## **Request**
+## **Request by ps_request_id**
 
 | **Instance** | **Method** | **URL** |
 | --- | --- | --- |
-| **PROD** | **GET** | https://mahiapi.in/v2/payin-acq2/client/{ps_request_id} |
-| **SANDBOX** | **GET** | https://merchant-api.pserv-test1.in/v2/payin-acq2/client/{ps_request_id} |
+| **PROD** | **GET** | https://navenpravah.in/payin/client/{ps_request_id} |
+| **SANDBOX** | **GET** | https://merchant-api.pserv-iner.in/payin/client/{ps_request_id} |
+
+## **Request by merchant_request_id**
+
+| **Instance** | **Method** | **URL** |
+| --- | --- | --- |
+| **PROD** | **GET** | https://navenpravah.in/payin/client/merchant-request/{merchant_request_id} |
+| **SANDBOX** | **GET** | https://merchant-api.pserv-iner.in/payin/client/merchant-request/{merchant_request_id} |
 
 **Request example**
 
----
+The `{ps_request_id}` is a unique identifier of the request inside Payment System.
 
 ```jsx
-curl --location --request GET 'https://mahiapi.in/v2/payin-acq2/client/34535432' \
+curl --location --request GET 'https://navenpravah.in/payin/client/clgggiss10003dvm2qnd01n5e'
 --header 'Authorization: Bearer <your_token_here>'
 ```
 
----
-
 ## **Response**
+
+The response will come in JSON format:
 
 | **Status** | **Response** |
 | --- | --- |
-| 200 | `{ "status": "pending", "amount": 2000, "currency": "INR", "receivedAmount": 2000 }` |
+| 200 | `{ "status": "pending", "amount": 2000, "currency": "INR", "receivedAmount": 2000, "isChargeback": false/true }` |
 | 401 | `{ "error": { "code": "invalid_token", "message": "The provided token is invalid or has expired." } }` |
 | 401 | `{ "error": { "code": "missing_required_field", "message": "One or more required fields are missing in the request." } }` |
 | 404 | `{ "error": { "code": "invalid_payin", "message": "Payin not found." } }` |
@@ -163,56 +191,26 @@ The current `status` of the payment request.
 
 | Value | Description |
 | --- | --- |
-| `pending` | Processing of transaction has not started yet |
-| `completed` | Payment operation complete |
+| `idle` | Transaction processing has not started yet (nobody opened URL) |
+| `pending` | Awaiting transaction (user opened URL and 15 minute timer on) |
+| `completed` | Transaction operation complete |
 | `rejected` | Transaction is rejected due to technical reasons (wrong card number or bank) |
 | `successed_by_partner` | Transaction is complete and sent to Merchant server successfully |
 | `rejected_by_partner` | Transaction is rejected and sent to Merchant server successfully |
 
-**amount** — The `amount` of money that was expected to be transferred by the sender.
+**amount**
 
-**currency** — The ISO 4217 `currency` code.
+The `amount` of money that was expected to be transferred by the sender.
 
-**receivedAmount** — The amount of money actually transferred.
+**currency**
 
-## **4. Request Status (Merchant request id)**
+The ISO 4217 `currency` code.
 
-To retrieve the current status of a payment request by `merchant_request_id`, clients should make a GET request to the following endpoint.
+**receivedAmount**
 
-## **Request**
+The amount of money actually transferred.
 
-| **Instance** | **Method** | **URL** |
-| --- | --- | --- |
-| **PROD** | **GET** | https://mahiapi.in/v2/payin-acq2/client/merchant-request/{merchant_request_id} |
-| **SANDBOX** | **GET** | https://merchant-api.pserv-test1.in/v2/payin-acq2/client/merchant-request/{merchant_request_id} |
-
-**Request example**
-
-```jsx
-curl --location --request GET 'https://mahiapi.in/v2/payin-acq2/client/merchant-request/34535432' \
---header 'Authorization: Bearer <your_token_here>'
-```
-
-## **Response**
-
-| **Status** | **Response** |
-| --- | --- |
-| 200 | `{ "status": "pending", "amount": 2000, "currency": "INR", "receivedAmount": 2000 }` |
-| 401 | `{ "error": { "code": "invalid_token", "message": "The provided token is invalid or has expired." } }` |
-| 401 | `{ "error": { "code": "missing_required_field", "message": "One or more required fields are missing in the request." } }` |
-| 404 | `{ "error": { "code": "invalid_payin", "message": "Payin not found." } }` |
-| 500 | `{ "error": { "code": "server_error", "message": "Get support from api developer." } }` |
-
-Response parameters:
-
-| **Params** | **Values** |
-| --- | --- |
-| status | string |
-| amount | number |
-| currency | string |
-| receivedAmount | number |
-
-## **5. Webhook notifications**
+## **4. Webhook notifications**
 
 Webhooks are used to inform the client about the change in status of their payout requests. When a payout status changes, the system sends a webhook notification to the client's specified `webhook_url`.
 
@@ -226,7 +224,7 @@ Webhooks are used to inform the client about the change in status of their payou
 | `amount` | The amount of money that was expected to be transferred by the sender |
 | `receivedAmount` | The amount of money actually transferred |
 | `currency` | The ISO 4217 currency code |
-| `error3ds` | 3DS error message |
+| `isChargeback` | Boolean — chargeback flag |
 
 **Data example**
 
@@ -240,24 +238,122 @@ Webhooks are used to inform the client about the change in status of their payou
     "amount": 6000,
     "receivedAmount": 6000,
     "currency": "INR",
-    "error3ds": "A technical error occurred during the payment process"
+    "isChargeback": false
 }
 ```
 
 ---
 
-**Webhook Signature**
+### Digital Signature (Optional)
 
-To verify the authenticity of the webhook notification, the client should check the signature in the `signatureV2` header. The signature is generated using the request body and salt.
+To verify the authenticity of the webhook notification, the client should check the signature in the `DigitalSignature` header. The signature is generated using the private and public key.
 
-Example of verifying the signature in Node.js:
+**1. Generate private key:**
+```bash
+openssl genpkey -algorithm RSA -out private_key.pem
+```
+
+**2. Generate public key:**
+```bash
+openssl rsa -pubout -in private_key.pem -out public_key.pem
+```
+
+**3. Sign request body (NodeJS example):**
+
+```js
+import * as crypto from 'crypto';
+import axios from 'axios';
+
+const privateKey = <PRIVATE KEY>
+
+const body = {
+  field1: "1",
+  field2:  2
+};
+
+const jsonBody = JSON.stringify(body);
+const sign = crypto.createSign('SHA512');
+
+sign.update(jsonBody);
+sign.end();
+
+const signature = sign.sign(privateKey, 'hex');
+const url = <URL_FOR_REQUEST>;
+
+const requestConfig = {
+  headers: {
+    'Content-Type': 'application/json',
+    'DigitalSignature': signature
+  }
+}
+
+await axios.post(url, body, requestConfig);
+```
+
+**4. Check signature (NodeJS example):**
+
+```js
+import * as crypto from 'crypto';
+const publicKey = <PUBLIC KEY>
+
+const body = {
+  field1: "1",
+  field2:  2
+};
+
+const jsonBody = JSON.stringify(body);
+const verify = crypto.createVerify('SHA512');
+
+verify.update(jsonBody);
+verify.end();
+
+const isValidSignature = verify.verify(publicKey, signature, 'hex');
+console.log('Is signature valid:', isValidSignature);
+```
+
+**5. Note: add signature into request headers as `DigitalSignature`:**
+
+```
+Date: Thu, 30 May 2024 08:45:52 GMT
+Content-Type: application/json; charset=utf-8
+Connection: keep-alive
+
+DigitalSignature: c3178f80b62765aec8f8ecf0c6b707b501ac2f72ce79f2812c067aa70f773b61fe101db33a4ba0dfdb9cfd5d9a618f7b6d9760c311bb0b9331efb043fe9e6b28d4025bbcc10b68518024e13f32a9f32f4f9d7d454597812b2005fda149dcf4ec36f11d51454e91d525c61d1adef6027229757fdc83d280d1fae835a9c10ad06b83fa9aeb010d20b777219c3f7996ca5233ccb8187d6a04d9549abe7348a7859babca08b6c9723d8c2ecb2cd69f32d0e2405a57e253a30174ea980c7de3d9d1d22d520446fea122d659fb02279b19846e4caea37972586e65d2c710c540007950e89346c12dcb9b97e6acec9685822acf93edd925a030f9d00559b0fa01a5ce1e
+```
+
+## **5. Cancel PayIN Request**
+
+This query allows the merchant to cancel a PayIN request that was not complete or rejected yet.
+
+## **Request**
+
+| **Instance** | **Method** | **URL** |
+| --- | --- | --- |
+| **PROD** | **PUT** | https://navenpravah.in/v2/payin/client/{ps_request_id}/reject |
+| **SANDBOX** | **PUT** | https://merchant-api.pserv-iner.in/v2/payin/client/{ps_request_id}/reject |
+
+**Request example**
+
+---
 
 ```jsx
-const salt = '<your-salt>';
-const signature = request.headers.signatureV2;
-const bodyString = JSON.stringify(request.body);
-const isReal = bcrypt.compareSync(bodyString, salt + signature);
+curl --location --request PUT 'https://navenpravah.in/v2/payin/client/noui/clikqi25s0001trm20q0qa5dr/reject' \
+--header 'Authorization: Bearer <your_token_here>'
 ```
+
+---
+
+## **Response**
+
+| **Status** | **Response** |
+| --- | --- |
+| 200 | `{ "ps_request_id": "clikqi25s0001trm20q0qa5dr", "status": "rejected_by_partner" }` |
+| 401 | `{ "error": { "code": "invalid_partner", "message": "Partner not found." } }` |
+| 400 | `{ "error": { "code": "missing_required_field", "message": "One or more required fields are missing in the request." } }` |
+| 400 | `{ "error": { "code": "invalid_update_payin", "message": "Payin not updated." } }` |
+| 400 | `{ "error": { "code": "invalid_update_bank_account", "message": "Bank account not updated." } }` |
+| 400 | `{ "error": { "code": "invalid_payin", "message": "Payin not found." } }` |
+| 400 | `{ "error": { "code": "invalid_payin_fields", "message": "One or more field values in the payin are invalid or in the wrong format." } }` |
 
 ## **6. Balance Request**
 
@@ -267,15 +363,15 @@ This request returns the merchant's account balance.
 
 | **Instance** | **Method** | **URL** |
 | --- | --- | --- |
-| **PROD** | **PUT** | https://mahiapi.in/partner/balance |
-| **SANDBOX** | **PUT** | https://merchant-api.pserv-test1.in/partner/balance |
+| **PROD** | **GET** | https://navenpravah.in/partner/balance |
+| **SANDBOX** | **GET** | https://merchant-api.pserv-iner.in/partner/balance |
 
 **Request example**
 
 ---
 
 ```jsx
-curl --location --request PUT 'https://mahiapi.in/partner/balance' \
+curl --location --request GET 'https://navenpravah.in/partner/balance' \
 --header 'Authorization: Bearer <your_token_here>'
 ```
 
@@ -287,52 +383,30 @@ curl --location --request PUT 'https://mahiapi.in/partner/balance' \
 | 401 | `{ "error": { "code": "invalid_partner", "message": "Partner not found." } }` |
 | 500 | `{ "error": { "code": "server_error", "message": "Get support from api developer." } }` |
 
-## **7. Creation of ACQ PayIN without Card Data**
+## **7. Digital Signature (Optional)**
 
-This request enables the client to input card data through the Acquiring method via a payment form, rather than H2H (Head-to-Head) interaction.
+See [Section 4 — Digital Signature](#digital-signature-optional) for full instructions.
 
-## **Request**
+## **8. Server Health Check**
 
-| **Instance** | **Method** | **URL** |
-| --- | --- | --- |
-| **PROD** | POST | https://mahiapi.in/v2/payin-acq2/idle |
-| **SANDBOX** | POST | https://merchant-api.pserv-test1.in/v2/payin-acq2/idle |
+### Endpoint
 
-**Request example**
+| **Method** | **URL** |
+| --- | --- |
+| GET | `https://navenpravah.in/api/status/check` |
 
----
+### Response
 
-```jsx
-curl --location 'https://mahiapi.in/v2/payin-acq2/idle' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer {{token}}' \
---data '{
-    "merchant_request_id": "111112121",
-    "sender_account": "Test Testovich",
-    "amount": 2000,
-    "currency": "INR",
-    "widget_id": "acq.v2.s4.5",
-    "redirect_url": "https://example.com",
-    "webhook_url": "https://example.com",
-    "campaign": "cls01x88a3833uguwbyrz0gh1"
-}'
+**If the server is running correctly and the gateway is accessible:**
+
+```json
+{"status": true}
 ```
 
-### Parameter Descriptions
+**If the server is not running or the gateway is inaccessible:**
 
-- **sender_account** (STRING, REQUIRED) — The `name` of the person who will send the money.
-- **amount** (FLOATING POINT NUMERIC, REQUIRED) — The `amount` of money that will be transferred by the sender.
-- **currency** (STRING, REQUIRED) — The `currency` of the transaction. Currently only `'INR'` is supported.
-- **webhook_url** (STRING, REQUIRED) — URL for receiving webhook notifications on success/failure.
-- **redirect_url** (STRING, REQUIRED) — Where the user will go after completing the PayIn procedure.
-- **merchant_request_id** (STRING, REQUIRED) — Unique identifier of the request from the client.
-- **widget_id** (STRING, REQUIRED) — Unique identifier of the widget that will be displayed by the returned URL.
-- **campaign** (STRING, OPTIONAL) — Unique identifier of the Campaign.
+```json
+{"status": false}
+```
 
-## **Response**
-
-| **Status** | **Response** |
-| --- | --- |
-| 200 | `{ "ps_request_id": "clswzc0yf0002xsuwhk0ih4os", "url": "https://example.com/clswzc0yf0002xsuwhk0ih4os/transfer" }` |
-| 401 | `{ "error": { "code": "invalid_partner", "message": "Partner not found." } }` |
-| 500 | `{ "error": { "code": "server_error", "message": "Get support from api developer." } }` |
+This endpoint allows clients to verify the operational status of the server and the gateway.

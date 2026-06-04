@@ -106,6 +106,7 @@ curl --location --request POST 'https://navenpravah.in/v2/payout/client' \
 | --- | --- |
 | 201 | { "ps_request_id": "clcszbdt937269ouwdl27c8nq" } — ps_request_id (string): The ID of the payment inside Payment System |
 | 400 | { "error": { "code": "invalid_upi", "message": "Invalid UPI ID format or unsupported VPA suffix" }, "http_code": 400 } — Triggered when a non-existent or unsupported UPI handle/suffix is provided in recipient_card. |
+| 400 | { "error": "This recipient account is not allowed" } — Triggered when the recipient_card value is found in the payout blacklist. The payout will not be created. |
 | 404 | { "error": { "code": "invalid_field_value", "message": "One or more field values in the request are invalid or in the wrong format." } } |
 | 502 | { "data": { "http_code": 502, "type": "api: create withdraw", "msg": "success", "response": null } } — Critical Payout Failure. Triggered when the upstream provider fails to initialize the withdrawal. This is a final rejection on the payment system side; the payout will not be created, and the merchant can safely reject the order on their side. |
 | 500 | { "error": { "code": "server_error", "message": "Get support from api developer." } } |

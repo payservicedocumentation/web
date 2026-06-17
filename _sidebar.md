@@ -3,3 +3,4 @@
 - [PayIN NoUI](payin-noui.md)
 - [PayOUT](payout.md)
 - [PayIN Acquiring](payin-acq.md)
+- [Dispute Requests](dispute_requests_section.md)
